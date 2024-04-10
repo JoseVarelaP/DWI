@@ -20,10 +20,43 @@ local function DifficultyMeter(pn)
 	-- local function set(self, player)
 	-- 	self:SetFromGameState( player );
 	-- end
+	local CropAmmounts = {
+		-- Left, P1
+		-- Right, P2
+		{0.89, 0.88},
+		{0.7, 0.7},
+		{0.6, 0.6},
+		{0.42, 0.42},
+		{0.3, 0.3},
+		{0.15, 0.15},
+		{0, 0},
+	}
 
-	-- local t = Def.DifficultyMeter {
-	-- 	Type="DifficultyMeter"; -- metrics section
-	-- };
+	local t = Def.ActorFrame {
+		-- Type="DifficultyMeter"; -- metrics section
+	};
+
+	t[#t+1] = Def.Sprite{
+		Texture=THEME:GetPathG("","Ticks.png"),
+		["CurrentSteps"..ToEnumShortString(pn).."ChangedMessageCommand"] = function(self)
+			if not GAMESTATE:GetCurrentSteps(pn) then return end
+
+			local steps = GAMESTATE:GetCurrentSteps(pn)
+			local diff = Enum.Reverse(Difficulty)
+			local meter = steps:GetMeter()
+			local cd = GetCustomDifficulty(steps:GetStepsType(), steps:GetDifficulty())
+			self:diffuse(CustomDifficultyToColor(cd))
+			if meter < 8 then
+    			self:cropright( CropAmmounts[meter][1] )
+    			--self:x(SCREEN_CENTER_X-300)
+    			--self:diffuse( TickDiffuses[PDiff(pn)+1][1], TickDiffuses[PDiff(pn)+1][2], TickDiffuses[PDiff(pn)+1][3],1 )
+    		else
+    			self:cropright( 0.9 )
+    			--self:x(SCREEN_CENTER_X-245)
+    			--self:diffuse( TickDiffuses[PDiff(pn)+1][1], TickDiffuses[PDiff(pn)+1][2], TickDiffuses[PDiff(pn)+1][3],1 )
+    		end
+		end
+	}
 
 	-- if pn == PLAYER_1 then
 	-- 	t.CurrentStepsP1ChangedMessageCommand=function(self) set(self, pn); end;
@@ -33,7 +66,7 @@ local function DifficultyMeter(pn)
 	-- 	t.CurrentTrailP2ChangedMessageCommand=function(self) set(self, pn); end;
 	-- end
 
-	-- return t;
+	return t;
 end
 
 local function DifficultyIcons(pn)
@@ -42,18 +75,24 @@ local function DifficultyIcons(pn)
 		local Selection = GAMESTATE:GetCurrentSteps(pn) or GAMESTATE:GetCurrentTrail(pn)
 
 		if not Selection then
-			self:Unset();
+			self:visible(false)
+			--self:Unset();
 			return
 		end
-		local dc = Selection:GetDifficulty()
-		self:SetFromDifficulty( dc );
+
+		local diff = Enum.Reverse(Difficulty)
+
+		self:setstate( diff[Selection:GetDifficulty()] )
+
+		--local dc = Selection:GetDifficulty()
+		--self:SetFromDifficulty( dc );
 	end
 
-	local t = Def.DifficultyIcon {
-		File="_difficulty icons 1x6";
+	local t = Def.Sprite {
+		Texture="_difficulty icons 1x6";
 		InitCommand=function(self)
-			self:player( pn );
-			self:SetPlayer( pn );
+			self:player( pn ):animate(0);
+			-- self:SetPlayer( pn );
 		end;
 
 		CurrentStepsP1ChangedMessageCommand=function(self) set(self, PLAYER_1); end;
@@ -269,14 +308,14 @@ local t = Def.ActorFrame {
 	};
 
 	-- -- difficulty meter
-	-- DifficultyMeter(PLAYER_1) .. {
-	-- 	BeginCommand=cmd(player,PLAYER_1;x,SCREEN_CENTER_X-240;y,SCREEN_CENTER_Y+184;shadowlength,0);
-	-- 	OffCommand=cmd(diffusealpha,0);
-	-- };
-	-- DifficultyMeter(PLAYER_2) .. {
-	-- 	BeginCommand=cmd(player,PLAYER_2;x,SCREEN_CENTER_X-100;y,SCREEN_CENTER_Y+184;shadowlength,0);
-	-- 	OffCommand=cmd(diffusealpha,0);
-	-- };
+	DifficultyMeter(PLAYER_1) .. {
+		BeginCommand=cmd(player,PLAYER_1;x,SCREEN_CENTER_X-240;y,SCREEN_CENTER_Y+184;shadowlength,0);
+		OffCommand=cmd(diffusealpha,0);
+	};
+	DifficultyMeter(PLAYER_2) .. {
+		BeginCommand=cmd(player,PLAYER_2;x,SCREEN_CENTER_X-100;y,SCREEN_CENTER_Y+184;shadowlength,0);
+		OffCommand=cmd(diffusealpha,0);
+	};
 
 	--new diffmeter
 	
