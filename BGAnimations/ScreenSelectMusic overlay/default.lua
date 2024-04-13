@@ -17,9 +17,6 @@ local function Autogen(pn)
 end
 
 local function DifficultyMeter(pn)
-	-- local function set(self, player)
-	-- 	self:SetFromGameState( player );
-	-- end
 	local CropAmmounts = {
 		-- Left, P1
 		-- Right, P2
@@ -32,9 +29,7 @@ local function DifficultyMeter(pn)
 		{0, 0},
 	}
 
-	local t = Def.ActorFrame {
-		-- Type="DifficultyMeter"; -- metrics section
-	};
+	local t = Def.ActorFrame {}
 
 	t[#t+1] = Def.Sprite{
 		Texture=THEME:GetPathG("","Ticks.png"),
@@ -48,23 +43,26 @@ local function DifficultyMeter(pn)
 			self:diffuse(CustomDifficultyToColor(cd))
 			if meter < 8 then
     			self:cropright( CropAmmounts[meter][1] )
-    			--self:x(SCREEN_CENTER_X-300)
-    			--self:diffuse( TickDiffuses[PDiff(pn)+1][1], TickDiffuses[PDiff(pn)+1][2], TickDiffuses[PDiff(pn)+1][3],1 )
     		else
     			self:cropright( 0.9 )
-    			--self:x(SCREEN_CENTER_X-245)
-    			--self:diffuse( TickDiffuses[PDiff(pn)+1][1], TickDiffuses[PDiff(pn)+1][2], TickDiffuses[PDiff(pn)+1][3],1 )
     		end
 		end
 	}
 
-	-- if pn == PLAYER_1 then
-	-- 	t.CurrentStepsP1ChangedMessageCommand=function(self) set(self, pn); end;
-	-- 	t.CurrentTrailP1ChangedMessageCommand=function(self) set(self, pn); end;
-	-- else
-	-- 	t.CurrentStepsP2ChangedMessageCommand=function(self) set(self, pn); end;
-	-- 	t.CurrentTrailP2ChangedMessageCommand=function(self) set(self, pn); end;
-	-- end
+	t[#t+1] = Def.BitmapText{
+		Font="_sui generis",
+		InitCommand=function (self)
+			self:zoom(0.5):xy(-36,-2):halign(0)
+		end,
+		["CurrentSteps"..ToEnumShortString(pn).."ChangedMessageCommand"] = function(self)
+			if not GAMESTATE:GetCurrentSteps(pn) then return end
+
+			local steps = GAMESTATE:GetCurrentSteps(pn)
+			local meter = steps:GetMeter()
+			self:visible( meter >= 8 )
+			self:settext( "x ".. meter )
+		end
+	}
 
 	return t;
 end
@@ -116,8 +114,6 @@ local function Radar()
 	end
 
 	local t = Def.GrooveRadar {
-		OnCommand=cmd();
-		OffCommand=cmd();
 		CurrentStepsP1ChangedMessageCommand=function(self) set(self, PLAYER_1); end;
 		CurrentStepsP2ChangedMessageCommand=function(self) set(self, PLAYER_2); end;
 		CurrentTrailP1ChangedMessageCommand=function(self) set(self, PLAYER_1); end;
@@ -150,7 +146,7 @@ local t = Def.ActorFrame {
 
 	Radar() .. {
 		BeginCommand=cmd(x,SCREEN_CENTER_X-169;y,SCREEN_CENTER_Y+81);
-		Condition=GAMESTATE:IsCourseMode() == false;
+		Condition=not GAMESTATE:IsCourseMode();
 	};
 
 	LoadFont("Common", "normal") .. {

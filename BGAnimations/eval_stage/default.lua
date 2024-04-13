@@ -1,11 +1,12 @@
-local t = LoadActor("stage" ) .. {
-	BeginCommand=cmd(playcommand,"Update");
-	CurrentSongChangedMessageCommand=cmd(playcommand,"Update");
-	UpdateCommand=cmd(playcommand,"Set", {
-		StageToShow = GAMESTATE:GetCurrentStage();
-		StageNumber = GAMESTATE:GetCurrentStageIndex();
-	} );
-};
+local t = LoadActor("stage") .. {
+	BeginCommand=function(self) self:playcommand("Update") end,
+	CurrentSongChangedMessageCommand=function(self) self:playcommand("Update") end,
+	UpdateCommand=function(self)
+		self:playcommand("Set", {
+			StageToShow = GAMESTATE:GetCurrentStage();
+			StageNumber = GAMESTATE:GetCurrentStageIndex();
+		})
+	end
+}
 
-return t;
-
+return t

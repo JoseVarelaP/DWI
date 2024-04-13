@@ -25,21 +25,21 @@ end;
 local t = Def.ActorFrame{};
 
 for player in ivalues(GAMESTATE:GetHumanPlayers()) do
-t[#t+1] = Def.ActorFrame{
-	LoadActor(THEME:GetPathG("StepsDisplayGameplay","frame"))..{
-	InitCommand=function(self)
-		local po = GAMESTATE:GetPlayerState(player):GetCurrentPlayerOptions();
-		self:x(player == PLAYER_1 and -SCREEN_WIDTH/2+47 or SCREEN_WIDTH/2-47);
-		if po:Reverse() ~= 0 then
-			self:y(SCREEN_TOP+53);
-		else
-			self:y(SCREEN_BOTTOM-54);
+	t[#t+1] = Def.ActorFrame{
+		LoadActor(THEME:GetPathG("StepsDisplayGameplay","frame"))..{
+		InitCommand=function(self)
+			local po = GAMESTATE:GetPlayerState(player):GetCurrentPlayerOptions();
+			self:x(player == PLAYER_1 and -SCREEN_WIDTH/2+47 or SCREEN_WIDTH/2-47);
+			if po:Reverse() ~= 0 then
+				self:y(SCREEN_TOP+53);
+			else
+				self:y(SCREEN_BOTTOM-54);
+			end;
+			self:pause();
+			self:setstate(LoadSteps(self,player));
 		end;
-		self:pause();
-		self:setstate(LoadSteps(self,player));
-	end;
+		};
 	};
-};
 end
 
 return t;
